@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre Zuzku</title>
+  <script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.0/firebase-database.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(to bottom, purple 0%, pink 50%, purple 100%);
+    }
+  
+    #container {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    #pikachu {
+      position: relative;
+      z-index: 1;
+      max-width: 100%; /* Ensure Pikachu image doesn't exceed the container width */
+      height: auto; /* Make Pikachu image responsive in height */
+    }
+  
+    .bubble {
+      position: absolute;
+      bottom: 10%; /* Adjusted for better visibility on mobile devices */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #FFFFFF;
+      border-radius: 20px; /* Adjusted for a more oval shape on mobile devices */
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 80%; /* Adjusted for better visibility on mobile devices */
+      text-align: center;
+      color: #333;
+      font-size: 18px;
+    }
+  
+    #btn {
+      position: absolute;
+      bottom: 5%; /* Adjusted for better visibility on mobile devices */
+      text-align: center;
+      width: 100%;
+    }
+  
+    .action-btn {
+      background-color: #FFCB05;
+      color: #333;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin-right: 10px;
+    }
+  
+    #greenBtn, #redBtn {
+      display: none;
+    }
+  
+    #greenBtn {
+      background-color: #00FF00; 
+      border-radius: 20px;
+      color: #FFFFFF;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+    }
+  
+    #redBtn {
+      background-color: #FF0000; 
+      border-radius: 20px;
+      color: #FFFFFF;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+    }
+  
+    @media only screen and (max-width: 600px) {
+      /* Adjust styles for small screens */
+      .bubble {
+        bottom: 20%;
+        width: 90%;
+      }
+    }
+  
+    @media only screen and (min-width: 601px) {
+      /* Adjust styles for desktop view */
+      .bubble {
+        left: 1200px;
+        bottom: 70%; /* Adjusted position above Pikachu's head */
+        width: 20%; /* Allow the bubble to adjust its width based on content */
+      }
+    }
+  </style>
+  
+</head>
+<body>
+  <div id="container">
+    <img src="Pikachu-logo-D0AAA93F17-seeklogo.com.png" alt="Pikachu" width="200" id="pikachu">
+    <div class="bubble" id="textbox">
+      <p id="displayText">Ahoj Zuzka</p>
+    </div>
+  </div>
+
+  <div id="btn">
+    <button id="changeTextBtn" class="action-btn" onclick="changeText()">Next</button>
+    <button id="greenBtn" class="action-btn" onclick="greenButtonClick()">✓</button>
+    <button id="redBtn" class="action-btn" onclick="redButtonClick()">X</button>
+  </div>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyC7X1IivHREr2QxS_CHNINzO8e0IxFvmoo",
+      authDomain: "pikachu-fafdf.firebaseapp.com",
+      databaseURL: "https://pikachu-fafdf-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pikachu-fafdf",
+      storageBucket: "pikachu-fafdf.appspot.com",
+      messagingSenderId: "846343471806",
+      appId: "1:846343471806:web:0ea3c2a92f5ea3a14314ef"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    var textIndex = 0;
+    var textArray = ["Prajem ti ešte prijemné sviatky a úspešné zvládnutie skúšok.", "A Ejo chcel aby som ti niečo od neho odkázal.", "Mrzí ho že bol na teba kus hrubý.", "No chcel ti iba pomôcť aby si mala lepšiu známku.", "Pretože mu na tebe veľmi záleží.", "A ani nevieš jak moc ťa má rád.", "Preto vytvoril mňa.", "Lebo je veľká pussy na to povedať ti že sa mu páčiš.", "A či by si šla s ním vo štvrtok sa večer napapať ?"];
+
+    function changeText() {
+      var displayText = document.getElementById("displayText");
+      var textbox = document.getElementById("textbox");
+      var textToDisplay = textArray[textIndex];
+      var index = 0;
+
+      function showNextCharacter() {
+        if (index <= textToDisplay.length) {
+          displayText.innerText = textToDisplay.substr(0, index);
+          index++;
+          setTimeout(showNextCharacter, 50); 
+        } else {
+          if (textIndex === textArray.length - 1) {
+            document.getElementById("changeTextBtn").style.display = "none";
+            document.getElementById("greenBtn").style.display = "inline-block";
+            document.getElementById("redBtn").style.display = "inline-block";
+          }
+          textIndex = (textIndex + 1) % textArray.length;
+        }
+      }
+
+      textbox.style.height = "auto";
+      setTimeout(function () {
+        textbox.style.height = textbox.scrollHeight + "px";
+        showNextCharacter();
+      }, 0);
+    }
+
+    function sendDataToDatabase(color) {
+      var database = firebase.database();
+      var colorRef = database.ref('buttonColor'); 
+
+      colorRef.push({
+        color: color,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
+
+    function greenButtonClick() {
+      sendDataToDatabase("green");
+      alert("Thank you for your answer.");
+    }
+
+    function redButtonClick() {
+      sendDataToDatabase("red");
+      alert("Thank you for your answer.");
+    }
+  </script>
+</body>
+</html>
